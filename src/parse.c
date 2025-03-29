@@ -446,6 +446,25 @@ Weft_ParseToken parse_char_esc(Weft_ParseFile *file, const char *src)
 	return tag_char(file, src, len + 1, get_esc_char(src[len]));
 }
 
+Weft_ParseToken parse_char_bare(Weft_ParseFile *file, const char *src)
+{
+	if (!*src) {
+		return tag_char(file, src, 0, 0);
+	} else if (is_char_esc(src)) {
+		if (is_hex_esc(src)) {
+			return parse_hex_esc(file, src);
+		} else if (is_dec_esc(src)) {
+			return parse_dec_esc(file, src);
+		} else if (is_lower_utf_esc(src)) {
+			return parse_lower_utf_esc(file, src);
+		} else if (is_upper_utf_esc(src)) {
+			return parse_upper_utf_esc(file, src);
+		}
+		return parse_char_esc(file, src);
+	}
+	return tag_char(file, src, 1, src[0]);
+}
+
 static bool is_include_open(const char *src)
 {
 	return src[0] == '@';
